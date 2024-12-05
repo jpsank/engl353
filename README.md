@@ -1,7 +1,7 @@
 # ENGL 353 Final Project: Hip Hop Lyrics vs. Geography Linguistic Analysis
 
 ## Introduction
-This project aims to analyze hip hop lyrics and their relationship to geography. The goals of the project are to determine what linguistic patterns in hip hop lyrics correlate with the geographical location of the artist and whether LLMs encode these patterns.
+This project aims to analyze hip hop lyrics and their relationship to geography. The goals of the project are to determine whether and what linguistic patterns in hip hop lyrics correlate with the geographical location of the artist and whether LLMs encode these patterns.
 
 RQ: Can we predict the geographical location of a rapper based on the lyrics of their songs? What linguistic patterns are predictive? To what extent do LLMs encode information predictive of geography?
 
