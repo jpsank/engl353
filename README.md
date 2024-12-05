@@ -1,7 +1,9 @@
 # ENGL 353 Final Project: Hip Hop Lyrics vs. Geography Linguistic Analysis
 
 ## Introduction
-This project aims to analyze hip hop lyrics and their relationship to geography. The goals of the project are to determine if there are any linguistic patterns in hip hop lyrics that can be attributed to the geographical location of the artist.
+This project aims to analyze hip hop lyrics and their relationship to geography. The goals of the project are to determine what linguistic patterns in hip hop lyrics correlate with the geographical location of the artist and whether LLMs encode these patterns.
+
+RQ: Can we predict the geographical location of a rapper based on the lyrics of their songs? What linguistic patterns are predictive? To what extent do LLMs encode information predictive of geography?
 
 
 ## Existing Literature
@@ -89,8 +91,9 @@ Model problems:
 
 
 ## Future Work
-1. Instead of BERT, use a model that is fine-tuned on song lyrics or rap lyrics to get more informative embeddings.
+1. Instead of BERT, use a model that is fine-tuned on song lyrics or rap lyrics to get more informative embeddings. For example, BERT tokenizes "cruisin'" as `['cr', '##uis', '##in']` but "cruising" as `['cruising']`, which is suboptimal, because the model will not understand intuitively that these two words are the same. A model fine-tuned on slang would have a better learned understanding of the semantic equivalence; or, I could pre-process and normalize the language, but it would ideally be better to preserve the informal language for more accurate understanding. In this [paper on slang in LLMs](https://arxiv.org/abs/2404.02323), researchers construct a dataset of sentences from movie subtitles with and without slang, then fine-tune LLMs to detect the presence of slang and identify what time period and region the slang comes from.
 2. Use k-means clustering to see if natural clusters emerge in the data based on the embeddings, and test if these clusters align with geographical regions. If I switch to a classification model, I could try using the clusters as classes. 💡!!
 3. Try different regression models to see if they perform better than Random Forest or Linear Regression.
 4. Reverse the current approach to generate lyrics based on a given location or region.
 5. Probe the embeddings to interpret what linguistic features are encoded in the model and how specific features might correlate with geography. For example, can we identify a feature that correlates with the use of Southern slang or East Coast rap battles? Similar to step 4, this could involve creating a model that generates lyrics based on a latent vector embedding, then moving through the latent space to see how the generated lyrics change. This could be a fun way to explore the latent space of rap lyrics.
+6. My project also specifically looks at whether existing models encode information predictive of the artist's location. I could instead fine-tune a model for text classification specifically to predict the artist's city/region from the lyrics. This would be a more direct way to test the hypothesis that the artist's location is encoded in the lyrics. I could also try to predict other metadata, like the decade the song was released or the artist themselves. 
