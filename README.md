@@ -76,6 +76,13 @@ Cross-validated R^2 for Latitude and Longitude (PCA): -2.8200123476844388
 The map shows the results of the Random Forest regression model with PCA reduced embeddings with `n_components=29`. The model was trained on the embeddings of the rappers in the dataset and then tested on the rapper Diddy. The map shows the predicted and actual locations of the rappers. The model performs better than the previous model, as the predicted locations are closer to the actual locations. The R^2 score for the model is -2.82, indicating that the model explains more of the variance in the data than the previous model. Diddy is from New York City, and the model puts him closer to the actual location than the previous model.
 
 
+## Current Fuckups
+1. The Kaggle dataset contains two different files for Tupac. I originally thought that one was from before he moved to California and the other was after, but now I'm pretty sure they are just two different compilations of his lyrics. I need to combine these into a single file. Oops.
+2. I don't remember if I actually manually cleaned the data. I know some of the text files contained weird stuff like Japanese characters. I need to go make sure I fixed that. Also, some of them contain words like "Verse 1" and "Chorus" and others don't, so that could be a confounding factor. I gotta remove those. Basically I need to more carefully clean the data.
+3. I didn't actually check if ChatGPT got the locations right. I need to go through and make sure the city assignments are correct.
+4. Non-issue: I was concerned that for rappers who moved around during their careers, I would have to assign them to multiple cities. But I realized that most rappers only started their careers in one city, so I can just assign them to that city. I need to make sure I'm consistent about this; I think I will assign rappers to the city where they are most known for their work and/or where they grew up.
+
+
 ## Future Work
 1. Instead of BERT, use a model that is fine-tuned on song lyrics or rap lyrics to get more informative embeddings.
 2. Use k-means clustering to see if natural clusters emerge in the data based on the embeddings, and test if these clusters align with geographical regions.
