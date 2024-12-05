@@ -122,8 +122,24 @@ if False:
 
 # ------------ PCA and Random Forest -> Map ------------
 
-# Apply PCA to reduce to 10 components TODO: Try different number of components
-pca = PCA(n_components=10)
+# Perform PCA
+pca = PCA()
+pca.fit(embeddings)
+
+# Scree plot
+plt.plot(np.cumsum(pca.explained_variance_ratio_))
+plt.xlabel('Number of Components')
+plt.ylabel('Cumulative Explained Variance')
+plt.title("Scree Plot")
+plt.show()
+
+# Automatic selection using the elbow method
+cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
+n_components = np.argmax(cumulative_variance > 0.95) + 1
+print("Number of Components for 95% Variance:", n_components)
+
+# Apply PCA to reduce to n components
+pca = PCA(n_components=n_components)
 reduced_embeddings = pca.fit_transform(embeddings)
 
 # Random Forest for both latitude and longitude
@@ -208,8 +224,8 @@ plt.show()
 pca = PCA(n_components=3)
 reduced_embeddings = pca.fit_transform(embeddings)
 
-# Optional: Choose a color map based on the norm or any other feature of the embeddings
-color_map = np.linalg.norm(embeddings, axis=1)  # Example: Using the embedding norm for color
+# Use the embedding norm for color
+color_map = np.linalg.norm(embeddings, axis=1)
 
 # Plotting
 fig = plt.figure(figsize=(10, 8))
