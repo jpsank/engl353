@@ -13,6 +13,8 @@ word2num = "*"
 pypdf = "*"
 geopy = "*"
 basemap = "*"
+seaborn = "*"
+unidecode = "*"
 
 [dev-packages]
 

@@ -34,6 +34,8 @@ The data for this project come from the [Kaggle Hip-Hop Encounters Data Science]
 ![Screenshot of Lyrics Folder](screenshots/lyrics_folder.png)
 
 ## Methodology
+
+### Attempt 1: Data Preprocessing and Predicting Rapper Locations from BERT Embeddings
 1. Download the dataset from Kaggle, clean the text data, and compile all lyrics into a single JSON file `lyrics.json`.
 2. Assign each rapper to a city based on their birthplace or where they started their career. I prompted ChatGPT to do this for me, then manually corrected the results and put them in a JSON file `cities.json`.
 3. Geolocate cities to get their latitude and longitude coordinates. I used the `geopy` library to do this and saved the results in a JSON file `city_coords.json`.
@@ -43,8 +45,13 @@ The data for this project come from the [Kaggle Hip-Hop Encounters Data Science]
 7. Repeat step 6 using the elbow method to determine the optimal number of components for PCA to explain 95% of the variance in the data. I then repeated the Random Forest regression with this number of components and mapped the predicted and actual locations of the rappers; the [new and improved map](#map-of-predicted-and-actual-locations-with-n_components29) is shown in the next section.
 8. Test the regression models on a rapper not in the training set to see how well they generalize to new data. I manually compiled a few songs from the rapper Diddy (first one that came to my mind since he's on the news) and ran the models on his lyrics to predict his coordinates. The prediction for each model is shown in its map from steps 6 and 7 in the next section.
 
+### Attempt 2: Data Preprocessing and Hierarchical Classification
+1. More data cleaning and preprocessing, including removing non-lyrical text from the lyrics files and standardizing the text in `prepare.py`. I used the `unidecode` library to fix special characters like accents and smart quotes, and I manually removed some sections, like Childish Gambino's screenplay. I also fixed Tupac's city to be in California, where he made a name for himself, instead of New York, where he was born.
+2. Repeat analyses from steps 5-8 in Attempt 1, but also add two new models: ElasticNet for regression and Random Forest regression with Lasso feature selection. I used a grid search to find the best hyperparameters for ElasticNet and Random Forest and cross-validated the models to get R^2 scores. Again, I mapped the predicted and actual locations of the rappers to see how well the models performed. I also added some lyrics from Snoop Dogg to the test set to see how well the models generalize to new data. The [results](#new-3d-plot-of-reduced-embeddings-with-n_components3) are shown in the next section.
+3. Classify the rappers into region, state, and city based on their lyrics using a **hierarchical classification** approach. I used a custom PyTorch model with four layers: one shared layer with ReLU activation and three separate layers with softmax activation for region, state, and city. This way, each layer of the hierarchy depends on the previous layers. I trained the model on the embeddings of the rappers and tested it on the test set. I used the `torch` library to build the model and the `sklearn` library to evaluate the model.
 
-## Results
+
+## Attempt 1: Results
 
 ### 3D Plot of Reduced Embeddings with `n_components=3`
 
@@ -54,7 +61,7 @@ The plot marks the reduced embeddings of the rappers in 3D space. The rappers ar
 
 ### Map of Predicted and Actual Locations with `n_components=10`
 
-![Map of Predicted and Actual Locations with n=10](screenshots/map_n=10_test.png)
+![Map of Predicted and Actual Locations with n=10](screenshots/pca_rf_n=10.png)
 
 ```
 Performing Grid Search for Random Forest Hyperparameters...
@@ -66,7 +73,7 @@ The map shows the results of the Random Forest regression model with PCA reduced
 
 ### Map of Predicted and Actual Locations with `n_components=29`
 
-![Map of Predicted and Actual Locations with n=29](screenshots/map_n=29_test.png)
+![Map of Predicted and Actual Locations with n=29](screenshots/pca_rf_n=29.png)
 
 ```
 Number of Components for 95% Variance: 29
@@ -77,17 +84,77 @@ Cross-validated R^2 for Latitude and Longitude (PCA): -2.8200123476844388
 
 The map shows the results of the Random Forest regression model with PCA reduced embeddings with `n_components=29`. The model was trained on the embeddings of the rappers in the dataset and then tested on the rapper Diddy. The map shows the predicted and actual locations of the rappers. The model performs better than the previous model, as the predicted locations are closer to the actual locations. The R^2 score for the model is -2.82, indicating that the model explains more of the variance in the data than the previous model. Diddy is from New York City, and the model puts him closer to the actual location than the previous model.
 
+## Attempt 2: Results
 
-## Current Fuckups
-Data problems:
-- The Kaggle dataset contains two different files for Tupac. I originally thought that one was from before he moved to California and the other was after, but now I'm pretty sure they are just two different compilations of his lyrics. I need to combine these into a single file. Oops.
-- I don't remember if I actually manually cleaned the data. I know some of the text files contained weird stuff like Japanese characters. I need to go make sure I fixed that. Also, some of them contain words like "Verse 1" and "Chorus" and others don't, so that could be a confounding factor. I gotta remove those. Basically I need to more carefully clean the data.
-- I didn't actually check if ChatGPT got the locations right. I need to go through and make sure the city assignments are correct.
-- Non-issue: I was concerned that for rappers who moved around during their careers, I would have to assign them to multiple cities. But I realized that most rappers only started their careers in one city, so I can just assign them to that city. I need to make sure I'm consistent about this; I think I will assign rappers to the city where they are most known for their work and/or where they grew up.
+### New 3D Plot of Reduced Embeddings with `n_components=3`
 
-Model problems:
-- Non-words: A lot of rap is not easily tokenizable; some words are slang or are spelled in non-standard ways, especially in lyrics (e.g. contractions like "cruisin'" and shit like "Doo-doo-d-doo, diggy-doo, yo"). I need to check that the BERT tokenizer can handle this phraseology.
-- Regression vs. Classification: Another thing I should do is stop framing this as a continuous regression problem and instead frame it as a classification problem. I should bin the latitude and longitude into regions (East Coast, West Coast, Midwest, South) and then predict which region the rapper is from. This would be more realistic since the rappers are from discrete regions, not continuous points on a map, lmao. Although there's also the consideration that some cities or states could be classes of their own, like how Atlanta and Texas are both in the South, but they have distinct rap scenes. So I should think about how to handle that, too. Maybe by using a **hierarchical classification** model or something. Also don't forget Drake, who's from Canada, which throws a wrench in my plans (fuckin BBL Drizzy).
+![New 3D plot of reduced embeddings](screenshots/3d_new.gif)
+
+
+### Map of Predicted and Actual Locations with ElasticNet for Regression
+
+![Map of Predicted and Actual Locations with ElasticNet](screenshots/elasticnet.png)
+
+```
+Performing Grid Search for ElasticNet Hyperparameters...
+Best Parameters: {'estimator__alphas': [0.02, 0.03, 0.04, 0.05, 0.1, 1.0, 10.0], 'estimator__l1_ratio': 0.5}
+Non-zero Coefficients: 111
+Cross-validated R^2 for Latitude and Longitude (ElasticNet for Regression): -0.97344604262302
+```
+
+
+### Map of Predicted and Actual Locations with Lasso Feature Selection + Random Forest
+
+![Map of Predicted and Actual Locations with Lasso Feature Selection + Random Forest](screenshots/lasso_rf.png)
+
+```
+Performing Grid Search for Random Forest Hyperparameters...
+Best Parameters: {'estimator__max_depth': 10, 'estimator__n_estimators': 200}
+Cross-validated R^2 for Latitude and Longitude (Lasso Feature Selection + Random Forest): -0.6976931231550697
+```
+
+
+### New Map of Predicted and Actual Locations with PCA + Random Forest
+
+![New Map of Predicted and Actual Locations with PCA + Random Forest](screenshots/pca_rf_new.png)
+
+```
+Number of Components for 95% Variance: 29
+Performing Grid Search for Random Forest Hyperparameters...
+Best Parameters: {'estimator__max_depth': None, 'estimator__n_estimators': 100}
+Cross-validated R^2 for Latitude and Longitude (PCA + Random Forest): -0.6554505519670382
+```
+
+
+### Hierarchical Classification Results
+
+```
+Number of Regions: 5, States: 14, Cities: 18
+Epoch 1/500, Total Loss: 4.3780, Region Loss: 3.2377, State Loss: 5.3437, City Loss: 5.7802
+Epoch 2/500, Total Loss: 4.1532, Region Loss: 2.9737, State Loss: 5.1226, City Loss: 5.6476
+Epoch 3/500, Total Loss: 3.9932, Region Loss: 2.8510, State Loss: 4.8285, City Loss: 5.5959
+Epoch 4/500, Total Loss: 3.9199, Region Loss: 2.8197, State Loss: 4.6710, City Loss: 5.5436
+Epoch 5/500, Total Loss: 3.9204, Region Loss: 2.9128, State Loss: 4.5642, City Loss: 5.4737
+Epoch 6/500, Total Loss: 3.7434, Region Loss: 2.7008, State Loss: 4.4563, City Loss: 5.2803
+Epoch 7/500, Total Loss: 3.7086, Region Loss: 2.7018, State Loss: 4.3678, City Loss: 5.2366
+Epoch 8/500, Total Loss: 3.7317, Region Loss: 2.6838, State Loss: 4.4167, City Loss: 5.3241
+Epoch 9/500, Total Loss: 3.7121, Region Loss: 2.7291, State Loss: 4.2878, City Loss: 5.3058
+Epoch 10/500, Total Loss: 3.5297, Region Loss: 2.4400, State Loss: 4.2267, City Loss: 5.2087
+...
+Epoch 495/500, Total Loss: 3.4848, Region Loss: 2.5558, State Loss: 3.9811, City Loss: 5.0630
+Epoch 496/500, Total Loss: 3.5069, Region Loss: 2.5459, State Loss: 4.0455, City Loss: 5.1012
+Epoch 497/500, Total Loss: 3.4740, Region Loss: 2.4134, State Loss: 4.1911, City Loss: 5.0499
+Epoch 498/500, Total Loss: 3.5621, Region Loss: 2.5981, State Loss: 4.1383, City Loss: 5.1076
+Epoch 499/500, Total Loss: 3.5386, Region Loss: 2.5245, State Loss: 4.2258, City Loss: 5.0430
+Epoch 500/500, Total Loss: 3.5067, Region Loss: 2.5567, State Loss: 4.0984, City Loss: 4.9943
+Region Accuracy: 0.125
+State Accuracy: 0.125
+City Accuracy: 0.0
+Snoop Dogg: East Coast, New York, Harlem
+Diddy: East Coast, New York, Harlem
+```
+
+Looks like this could use some work, lol. The model is not performing well, with low accuracy for region, state, and city. The model predicts Snoop Dogg is from Harlem, New York, which is incorrect. Diddy is also predicted to be from Harlem, New York, which is correct, but it seems like the model is just guessing. I might have to change the model architecture or hyperparameters to get better results.
 
 
 ## Future Work
@@ -96,5 +163,4 @@ Model problems:
 3. Try different regression models to see if they perform better than Random Forest or Linear Regression.
 4. Reverse the current approach to generate lyrics based on a given location or region.
 5. Probe the embeddings to interpret what linguistic features are encoded in the model and how specific features might correlate with geography. For example, can we identify a feature that correlates with the use of Southern slang or East Coast rap battles? Similar to step 4, this could involve creating a model that generates lyrics based on a latent vector embedding, then moving through the latent space to see how the generated lyrics change. This could be a fun way to explore the latent space of rap lyrics.
-6. My project also specifically looks at whether existing models encode information predictive of the artist's location. I could instead fine-tune a model for text classification specifically to predict the artist's city/region from the lyrics. This would be a more direct way to test the hypothesis that the artist's location is encoded in the lyrics. I could also try to predict other metadata, like the decade the song was released or the artist themselves. 
-7. Use lasso regression instead of PCA for dimensionality reduction. Lasso performs **feature selection**, so it would be interesting from an interpretability standpoint to see which features in the BERT embeddings are most important for predicting the artist's location.
+6. Fine-tune a pre-trained model. Currently, my project looks at whether existing pre-trained models already encode information predictive of the artist's location. I could instead fine-tune a model for text classification specifically to predict the artist's city/region from the lyrics. This would be a more direct way to test the hypothesis that the artist's location is encoded in the lyrics. I could also try to predict other metadata, like the decade the song was released or the artist themselves. 
