@@ -15,7 +15,7 @@ This project aims to analyze hip hop lyrics and their relationship to geography.
 
 RQ: Can we predict the geographical location of a rapper based on the lyrics of their songs? What linguistic patterns are predictive? To what extent do LLMs encode information predictive of geography?
 
-The document containing my final report is available [here](353%20Final%20Report.docx).
+The document containing my final report is available [here](353%20Final%20Report.docx). ChatGPT was utilized in the making of this project, including for code assistance and in generating drafts of the written report.
 
 
 ## Existing Literature
